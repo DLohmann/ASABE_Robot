@@ -64,7 +64,7 @@ Servo servoright;
 
 
 //#define printMovements    //Boolean for printing motor actions (forward, right, left, back, stop_servos). defined for printing, undefined for not printing
-#define printState          //Boolean for printing current robot state (Idle, Read_Line, Forward, Left, Right). defined for printing, undefined for not printing
+//#define printState          //Boolean for printing current robot state (Idle, Read_Line, Forward, Left, Right). defined for printing, undefined for not printing
 #define printSensorBar      //Boolean for printing current sensorbar values (mySensorBar.getPosition(), mySensorBar.getDensity()). defined for printing, undefined for not printing
 
 //Define the states that the decision making machines uses:
@@ -117,6 +117,12 @@ void setup()
 void loop()
 {
 uint8_t nextState = state;
+
+#ifdef printState
+  printStateString();
+  Serial.println();
+#endif
+
 switch (state){
 case Idle:
   stop_servos();
@@ -168,7 +174,7 @@ void forward(){
   servoright.write(0);
 
   #ifdef printMovements
-    Serial.println("calling forward");
+    Serial.println("MOVE forward");
   #endif
 }
 
@@ -177,7 +183,7 @@ void left() {
   servoright.write(0);
 
   #ifdef printMovements
-    Serial.println("calling left");
+    Serial.println("MOVE left");
   #endif
 }
 
@@ -186,7 +192,7 @@ void back() {
   servoright.write(180);
   
   #ifdef printMovements
-    Serial.println("calling back");
+    Serial.println("MOVE back");
   #endif
 }
 
@@ -195,7 +201,7 @@ void right() {
   servoright.write(180);
   
   #ifdef printMovements
-  Serial.println("calling right");
+  Serial.println("MOVE right");
   #endif
 }
 
@@ -205,35 +211,37 @@ void stop_servos(){
   servoright.write(90);
   
  #ifdef printMovements
-  Serial.println("calling stop_servos");
+  Serial.println("MOVE stop_servos");
  #endif
 }
 
 void printStateString () {
   switch (state) {
     case Idle:
-      Serial.print ("Idle");
+      Serial.print ("STATE Idle");
       break;
     case Read_Line:
-      Serial.print ("Read_Line");
+      Serial.print ("STATE Read_Line");
       break;
     case Forward:
-      Serial.print ("Forward");
+      Serial.print ("STATE Forward");
       break;
     case Left:
-      Serial.print ("Left");
+      Serial.print ("STATE Left");
       break;
     case Right:
-      Serial.print ("Right");
+      Serial.print ("STATE Right");
       break;
     default:
-      Serial.print ("State not found");
+      Serial.print ("STATE not found");
   }
 
 }
 
-/*
+
 void printSensorBarVals () {
-  Serial.println ("Position: " + mySensorBar.getPosition() + ", Density: " + mySensorBar.getDensity());
+  Serial.print ("SENSORBAR Position: ");
+  Serial.print (mySensorBar.getPosition());
+  Serial.print (", Density: ");
+  Serial.println (mySensorBar.getDensity());
 }
-*/
