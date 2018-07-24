@@ -9,7 +9,7 @@ int rightClawOpenAngle;
 int leftClawClosedAngle;
 int rightClawClosedAngle;
 
-
+enum Claw {right, left};
 
 void setup() {
   leftClaw.attach(4);
@@ -18,7 +18,8 @@ void setup() {
   Serial.begin(9600);  // start serial for output
   Serial.println("Program started.");
   Serial.println();
-  ConfigureClaws();
+  //ConfigureClaws();
+  clawGrab (Claw::right);
 }
 
 void loop() {
@@ -34,6 +35,8 @@ void loop() {
   delay(500);
   */
 
+  // Move arm and single claw
+  /*
   //leftClaw.write(180);
   //rightClaw.write(180);
   Serial.print("rightClaw: ");
@@ -44,7 +47,7 @@ void loop() {
   //rightClaw.write(0);
   //arm.write(0);
   //delay(500);
-
+  */
   
 }
 
@@ -77,15 +80,63 @@ void ConfigureClaws () {
   Serial.println (rightClawClosedAngle);
 }
 
+// Motion to Grab Ball
+// ASSUMES CLAW is INITIALLY OPEN, and assuming arm is INITIALLY in MIDDLE
+void clawGrab (Claw claw) {
+  
+  // Get the correct servo
+  Servo * clawServo;
+  if (claw == Claw::right) {
+    clawServo = &rightClaw;
+  } else if (claw == Claw::left) {
+    clawServo = &leftClaw;
+  } else {
+    Serial.println ("Error, unknown claw");
+  }
+  
+  //get initial claw and arm values, to reset them later
+  int initialClaw = clawServo->read();
+  int initialArm = arm.read();
+
+  // Move arm to side
+  if (claw == Claw::right) {
+    // move arm right, and right claw to ball
+    arm.write(135);// right direction????????????????????????????????????????????????????????????????
+    delay(250);
+    arm.write(90);
+    Serial.println ("Moving arm right");
+  } else if (claw == Claw::left) {
+    // move arm left, and left claw to ball
+    arm.write(45);// left direction????????????????????????????????????????????????????????????????
+    delay(250);
+    arm.write(90);
+    Serial.println ("Moving arm left");
+  } else {
+    Serial.println ("Error: \"clawGrab\" called on a servo that is not a claw!");
+  }
+
+  // Close claw around ball
+  clawServo->write(0);
+
+  // RESET CLAW to OPEN and ARM to MIDDLE
+  arm.write(initialArm);  // Reset arm to middle BEFORE resetting claw to open
+  delay(500);
+  arm.write(90);
+  clawServo->write(initialClaw);  // So that claw is over basket before opening, and dropping ball in basket
+}
 
 /*
-openClaw () {
+int openClaw (Servo claw) {
   
 }
+*/
 
+/*
 closeClaw (Servo s) {
-  if (s.read() < )
+  
 }
 */
+
+
 
 
