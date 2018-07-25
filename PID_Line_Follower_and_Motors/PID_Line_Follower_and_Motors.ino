@@ -195,7 +195,7 @@ int getError () {
 	// setPoint: desired value
 	// processValue: current value
 	// Error = setPoint - processValue
-	return getPosition();	//0 - getPosition(); //???
+	return mySensorBar.getPosition();	//0 - getPosition(); //???
 }
 
 void forward(){
