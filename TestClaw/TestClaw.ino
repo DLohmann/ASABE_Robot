@@ -11,6 +11,8 @@ int rightClawClosedAngle;
 
 enum Claw {right, left};
 
+int photoResistorPin = A1;
+
 void setup() {
   leftClaw.attach(4);
   rightClaw.attach(5);
@@ -19,37 +21,116 @@ void setup() {
   Serial.println("Program started.");
   Serial.println();
   //ConfigureClaws();
-  clawGrab (Claw::right);
+  //clawGrab (Claw::right);
 }
 
 void loop() {
+
+  // Print photoresistor value
+  //          PhotoR     10K
+  //+5    o---/\/\/--.--/\/\/---o GND
+  //                 |
+  //Pin 0 o-----------
   /*
-  // Cause arm and claw movement
-  leftClaw.write(180);
-  rightClaw.write(180);
-  arm.write(180);
-  delay(500);
-  leftClaw.write(0);
-  rightClaw.write(0);
-  arm.write(0);
-  delay(500);
+  Serial.println(analogRead(photoResistorPin * 5.0 / 1023.0));  // Analog pin read returns a 10 bit unsigned integer (from 0 to 1023) showing the voltage level of the pin (between 0V and 5V). So multiply sensorvalue by 5V/1023 to convert to voltage
+  delay(10);
   */
 
-  // Move arm and single claw
-  /*
+  
+  // Cause arm and claw movement/spasms
+  //*
   //leftClaw.write(180);
   //rightClaw.write(180);
-  Serial.print("rightClaw: ");
-  Serial.println(rightClaw.read());
-  //arm.write(180);
+  arm.write(180);
   delay(500);
   //leftClaw.write(0);
   //rightClaw.write(0);
-  //arm.write(0);
-  //delay(500);
+  arm.write(0);
+  delay(500);
+  //*/
+
+  // Move arm and single claw
+  /*
+  arm.write(45);  //move arm left
+  delay(1000);  //for 1 sec
+  arm.write(90);  //stop moving arm left
+  delay(1000);  //wait 1 sec
+  // grab ball
+  delay(1000);  //for 1 sec;
+  arm.write(135);  //move arm right
+  delay(1000);  // for 1 sec
+  arm.write(90);  // stop moving arm right
+  delay(5000);
   */
+
+  // Claw grabs ball (sort of works if the servos are set up right)
+  //*
+  leftClaw.write(90);
+  //rightClaw.write(180);
+  //Serial.print("rightClaw: ");
+  //Serial.println(rightClaw.read());
+  
+  delay(1000);
+  leftClaw.write(-90);
+  delay(1000);
+  //rightClaw.write(-130);
+  //arm.write(110);
+  delay(1000);
+  //*/
   
 }
+
+void rightClawGrasp () {
+  clawGrasp(Claw::right);
+}
+
+void leftClawGrasp () {
+  clawGrasp(Claw::left);
+}
+
+// Closes claw around ball (sort of works if the servos are set up right)
+void clawGrasp (Claw claw) {
+  
+  // Get the correct servo
+  Servo * clawServo;
+  if (claw == Claw::right) {
+    clawServo = &rightClaw;
+  } else if (claw == Claw::left) {
+    clawServo = &leftClaw;
+  } else {
+    Serial.println ("Error, unknown claw");
+  }
+  
+  clawServo->write(90);
+  delay(1000);
+  clawServo->write(-90);
+  delay(1000);
+}
+
+int armSpeed = 45;  // is this 45 degrees per second? The documentation says the servo write function takes a number from 0 to 180
+int servoRPM = 0; // RPM of the servo at the "armSpeed" speed. We will have to test this by running servo at "armSpeed" for 2-5 minutes, counting the number of rotations, and dividing this by how many minutes it ran
+int currentToothPosition = 0; // assume arm starts at position 0
+// move the arm by a certain number of teeth (There are 17 teeth on arm, labeled -8 to 8, but the ends -8 and 8 are not reachable. So arm can only go from -6 to 6).
+// Positive + values move arm right, negative - values move arm left
+// There are 10 teeth on the top wheel
+// returns the change in position from current position (final position - initial position)
+int moveArm (int toothPosition) {
+  // check if toothPosition is between -6 and 6
+  if (toothPosition < -6 || toothPosition > 6) {
+    Serial.print   ("Error: can't move arm to pin ");
+    Serial.print   (toothPosition);
+    Serial.println (" because it's out of arm's range.");
+    return 0;
+  }
+  int distance = toothPosition - currentToothPosition;
+
+  // Calculate amount of time to move for (distance = speed * time)
+  int moveTime = distance / armSpeed;
+  
+  currentToothPosition += distance; // after moving, reset current tooth position
+  return distance;  // return distance traveled (in teeth)
+}
+
 
 // Set up both claws
 void ConfigureClaws () {
